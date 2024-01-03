@@ -1,0 +1,210 @@
+---
+title: "R Notebook_Random Variables Exercises"
+output: html_notebook
+---
+
+import data into R
+
+```{r}
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/femaleControlsPopulation.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+x <- unlist( read.csv(filename) )
+View(x)
+head(x)
+```
+1. What is the average of these weights?
+
+2. After setting the seed at 1, set.seed(1) take a random sample of size 5. What is the absolute value (use abs) of the difference between the average of the sample and the average of all the values?
+
+3. After setting the seed at 5, set.seed(5) take a random sample of size 5. What is the absolute value of the difference between the average of the sample and the average of all the values?
+
+
+```{r}
+bodyweights_mean<-mean(x)
+
+cat("The average weight of the population is:", bodyweights_mean, "\n")
+
+set.seed(1)
+control<-sample(x,5)
+mean_difference<-abs(mean(control)-bodyweights_mean)
+mean_difference
+
+set.seed(5)
+control_1<-sample(x,5)
+mean_difference_1<-abs(mean(control_1)-bodyweights_mean)
+mean_difference_1
+```
+5.Set the seed at 1, then using a for-loop take a random sample of 5 mice 1,000 times. Save these averages. What percent of these 1,000 averages are more than 1 ounce away from the average of x ?
+
+
+
+```{r}
+set.seed(1)
+n <- 1000
+null <- numeric(n)
+
+for (i in 1:n) {
+  control_2 <- sample(x, 5)
+  null[i] <- abs(mean(control_2) - mean(x))
+}
+
+percentage_bigger_than <- mean(null > 1) * 100
+
+percentage_bigger_than
+```
+6.We are now going to increase the number of times we redo the sample from 1,000 to 10,000. Set the seed at 1, then using a for-loop take a random sample of 5 mice 10,000 times. Save these averages. What percent of these 10,000 averages are more than 1 ounce away from the average of x ?
+
+```{r}
+set.seed(1)
+n<-10000
+null<-numeric(n)
+
+for (i in 1:n){
+  control_3<-sample(x,5)
+  null[i]<-mean(control_3)-mean(x)
+}
+
+percentage_bigger_than_1<-mean(null>1)*100
+
+percentage_bigger_than_1
+```
+7. Note that the answers to 4 and 5 barely changed. This is expected. The way we think about the random value distributions is as the distribution of the list of values obtained if we repeated the experiment an infinite number of times. On a computer, we can’t perform an infinite number of iterations so instead, for our examples, we consider 1,000 to be large enough, thus 10,000 is as well. Now if instead we change the sample size, then we change the random variable and thus its distribution.
+
+Set the seed at 1, then using a for-loop take a random sample of 50 mice 1,000 times. Save these averages. What percent of these 1,000 averages are more than 1 ounce away from the average of x ?
+
+```{r}
+set.seed(1)
+n<-1000
+
+null<-numeric(n)
+
+for (i in 1:n){
+  control_4<-sample(x,50)
+  null[i]<-mean(control_4)-mean(x)
+  
+}
+
+percentage_bigger_than_2<-mean(null>1)*100
+percentage_bigger_than_2
+```
+8. Use a histogram to “look” at the distribution of averages we get with a sample size of 5 and a sample size of 50.
+
+```{r}
+set.seed(1)
+n <- 1000
+null <- numeric(n)
+
+for (i in 1:n) {
+  control_3 <- sample(x, 5)
+  sample_mean_3 <- mean(control_3)
+  null[i] <- abs(sample_mean_3 - mean(x))
+}
+
+percentage_bigger_than_1_ounce <- mean(null > 1) * 100
+
+smallest_3 <- floor(min(control_3))
+largest_3 <- ceiling(max(control_3))
+bins_3 <- seq(smallest_3, largest_3)
+hist(control_3, breaks = bins_3, main = "Weights for sample size 5")
+
+
+```
+
+```{r}
+set.seed(1)
+n <- 1000
+null <- numeric(n)
+
+for (i in 1:n) {
+  control_4 <- sample(x, 50)
+  sample_mean_4 <- mean(control_4)
+  null[i] <- abs(sample_mean_4 - mean(x))
+}
+
+percentage_bigger_than_1_ounce <- mean(null > 1) * 100
+
+
+smallest_4 <- floor(min(control_4))
+largest_4 <- ceiling(max(control_4))
+bins_3 <- seq(smallest_4, largest_4)
+hist(control_4, breaks = bins_4, main = "Weights for sample size 50")
+
+
+
+
+```
+9. For the last set of averages, the ones obtained from a sample size of 50, what percent are between 23 and 25?
+
+```{r}
+set.seed(1)
+n<-1000
+null<-numeric(n)
+count_between_23_and_25<-0
+
+for (i in 1:n){
+  control_4<-sample(x,50)
+  sample_mean_4<-mean(control_4)
+  null[i]<-sample_mean_4
+  
+  if (sample_mean_4>=23 && sample_mean_4<=25) {
+    count_between_23_and_25<-count_between_23_and_25+1
+  }
+}
+percentage_between_23_and_25<-(count_between_23_and_25)/n*100
+percentage_between_23_and_25
+```
+10. Now ask the same question of a normal distribution with average 23.9 and standard deviation 0.43.
+```{r}
+set.seed(1)
+n<-1000
+null<-numeric(n)
+count_between_23_25<-0
+
+for (i in 1:n){
+  control_5<-rnorm(50,mean=23.9,sd=0.43)
+  sample_mean_5<-mean(control_5)
+  null[i]<-sample_mean_5
+  
+  if (sample_mean_5>=23 && sample_mean_5<=25){
+    count_between_23_25<-count_between_23_25+1
+  }
+}
+percentage_between_23_25_normal<-(count_between_23_25)/n*100
+percentage_between_23_25_normal
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
