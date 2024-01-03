@@ -1,0 +1,228 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+**Explanation:**
+- This R Notebook chunk is labeled "Download and Read Dataset" for clarity.
+- The `echo=TRUE` argument is used to include the code in the output.
+- The code checks if the 'downloader' package is installed and installs it if not.
+- The 'downloader' package is loaded.
+- The dataset is downloaded from the specified URL and saved with the filename "mice_pheno.csv".
+- The dataset is then read into a data frame named 'dat' using the `read.csv` function.
+
+
+```{r Download and Read Dataset, echo=TRUE}
+# Load the 'downloader' package if not already installed
+if (!requireNamespace("downloader", quietly = TRUE)) {
+  install.packages("downloader")
+}
+library(downloader)
+
+# Download the dataset
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/mice_pheno.csv"
+filename <- "mice_pheno.csv"
+download(url, destfile = filename)
+
+# Read the dataset into a data frame
+dat <- read.csv(filename)
+
+dat%>%skim()
+
+```
+
+
+**Explanation:**
+- This R Notebook chunk is labeled "Data Filtering and Descriptive Statistics" for clarity.
+- The `echo=TRUE` argument is used to include the code in the output.
+- The required 'dplyr' library is loaded.
+- The dataset is filtered to create two populations based on specified criteria.
+- The means of the filtered populations are calculated.
+- The difference in means is printed.
+
+```{r Data Filtering and Descriptive Statistics, echo=TRUE}
+# Load the required libraries
+library(dplyr)
+
+# Filter the dataset to create populations based on criteria
+controlPopulation <- filter(dat,Sex == "F" & Diet == "chow") %>%  
+  select(Bodyweight) %>% unlist
+hfPopulation <- filter(dat,Sex == "F" & Diet == "hf") %>%  
+  select(Bodyweight) %>% unlist
+# Calculate means of the populations
+mu_hf <- mean(hfPopulation)
+mu_control <- mean(controlPopulation)
+
+# Print the difference in means
+print(mu_hf - mu_control)
+```
+
+
+**Explanation:**
+- This R Notebook chunk is labeled "Variance Calculation and Comparison" for clarity.
+- The `echo=TRUE` argument is used to include the code in the output.
+- The population variance is calculated using the formula \( \frac{1}{N} \sum_{i=1}^{N} (x_i - \bar{x})^2 \), where \( N \) is the length of the population.
+- The code checks if the variance calculated using the `var()` function is identical to the calculated population variance.
+- The code also checks if the adjusted variance (\( \frac{N-1}{N} \times \text{var}(x) \)) is identical to the calculated population variance.
+
+```{r Variance Calculation and Comparison, echo=TRUE}
+# Assign controlPopulation to variable x
+x <- controlPopulation
+
+# Get the length of x
+N <- length(x)
+
+# Calculate population variance
+populationvar <- mean((x - mean(x))^2)
+
+# Check if the variance calculated using var() is identical to the population variance
+identical(var(x), populationvar)
+
+# Check if the adjusted variance is identical to the population variance
+identical(var(x) * (N - 1) / N, populationvar)
+
+library(rafalib)
+sd_hf <- popsd(hfPopulation)
+sd_control <- popsd(controlPopulation)
+
+```
+
+**Explanation:**
+- This R Notebook chunk is labeled "Sampling and Simulation" for clarity.
+- The `echo=TRUE` argument is used to include the code in the output.
+- A sample size \(N\) is set for the hf and control populations.
+- Random samples of size \(N\) are created from hfPopulation and controlPopulation.
+- A vector `Ns` is defined, representing different sample sizes for simulations.
+- The number of simulations (\(B\)) is set to 10000.
+- Simulations are performed using the `sapply` function, calculating the differences in means for each sample size and replicating the process for 10000 times. The results are stored in the `res` matrix.
+
+```{r Sampling and Simulation, echo=TRUE}
+# Set the sample size for hf and control populations
+N <- 12
+
+# Create random samples from hfPopulation and controlPopulation
+hf <- sample(hfPopulation, N)
+control <- sample(controlPopulation, N)
+
+# Define a vector of different sample sizes (Ns)
+Ns <- c(3, 12, 25, 50)
+
+# Set the number of simulations (B)
+B <- 10000
+
+# Perform simulations to calculate differences in means for each sample size
+res <- sapply(Ns, function(n) {
+  replicate(B, mean(sample(hfPopulation, n)) - mean(sample(controlPopulation, n)))
+})
+
+
+```
+
+**Explanation:**
+- This R Notebook chunk is labeled "QQ Plots for Simulated Differences in Means" for clarity.
+- The `echo=TRUE` argument is used to include the code in the output.
+- A custom function `mypar` is defined to set the layout using `par` for a 2x2 plot.
+- The layout is set using `mypar(2, 2)`.
+- A loop is used to iterate through different sample sizes (`Ns`).
+- For each sample size, the average and standard deviation of the simulated differences in means are calculated for titles.
+- QQ plots are created using `qqnorm` and `qqline` to visualize the distribution of the simulated differences in means. Each plot corresponds to a different sample size.
+
+
+```{r QQ Plots for Simulated Differences in Means, echo=TRUE}
+# Define a custom par function (mypar)
+mypar <- function(nr, nc) {
+  par(mfrow = c(nr, nc), mar = c(4, 4, 2, 1))
+}
+
+# Set the layout for a 2x2 plot
+mypar(2, 2)
+
+# Loop through different sample sizes
+for (i in seq(along = Ns)) {
+  # Calculate average and standard deviation for titles
+  titleavg <- signif(mean(res[, i]), 3)
+  titlesd <- signif(sd(res[, i]), 3)
+  title <- paste0("N=", Ns[i], " Avg=", titleavg, " SD=", titlesd)
+
+  # Create QQ plots
+  qqnorm(res[, i], main = title)
+  qqline(res[, i], col = 2)
+}
+```
+
+**Explanation:**
+- This R Notebook chunk is labeled "QQ Plots for Simulated t-Statistic" for clarity.
+- The `echo=TRUE` argument is used to include the code in the output.
+- A custom function `mypar` is defined to set the layout using `par` for a 2x2 plot.
+- The sample sizes (`Ns`) and the number of simulations (`B`) are set.
+- A function `computetstat` is defined to compute a t-statistic for given sample sizes.
+- Simulations are performed using `sapply` to calculate t-statistics for each sample size and replicate the process for 10000 times. The results are stored in the `res` matrix.
+- QQ plots are created using `qqnorm` and `qqline` to visualize the distribution of the simulated t-statistics. Each plot corresponds to a different sample size.
+```{r QQ Plots for Simulated t-Statistic, echo=TRUE}
+# Define a custom par function (mypar)
+mypar <- function(nr, nc) {
+  par(mfrow = c(nr, nc), mar = c(4, 4, 2, 1))
+}
+
+# Set the sample sizes (Ns) and number of simulations (B)
+Ns <- c(3, 12, 25, 50)
+B <- 10000
+
+# Function to compute a t-statistic
+computetstat <- function(n) {
+  y <- sample(hfPopulation, n)
+  x <- sample(controlPopulation, n)
+  (mean(y) - mean(x)) / sqrt(var(y) / n + var(x) / n)
+}
+
+# Perform simulations to compute t-statistics for each sample size
+res <- sapply(Ns, function(n) {
+  replicate(B, computetstat(n))
+})
+
+# Set the layout for a 2x2 plot
+mypar(2, 2)
+
+# Loop through different sample sizes
+for (i in seq(along = Ns)) {
+  # Create QQ plots for t-statistics
+  qqnorm(res[, i], main = Ns[i])
+  qqline(res[, i], col = 2)
+}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
