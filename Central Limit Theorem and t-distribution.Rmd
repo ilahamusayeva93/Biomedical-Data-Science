@@ -1,0 +1,77 @@
+---
+title: "R Notebook_Central Limit Theorem and t-distribution"
+output: html_notebook
+---
+
+The Central Limit Theorem (CLT) and the t-distribution are two key concepts that aid in important probability calculations, often employed in scientific research for testing statistical hypotheses. To utilize these methods, we need to make certain assumptions unique to each, but if these assumptions hold true, we can precisely calculate probabilities using mathematical formulas.
+
+Central Limit Theorem:
+The CLT is a fundamental concept frequently utilized in science. It states that when the sample size is sufficiently large, the average (Ȳ) of a random sample follows a normal distribution centered at the population average (μY) with a standard deviation equal to the population standard deviation (σY), divided by the square root of the sample size (N). The standard deviation of a random variable's distribution is referred to as the standard error.
+
+If we subtract a constant from a random variable, the mean of the new random variable shifts by that constant. Similarly, if we multiply a random variable by a constant, the mean and standard deviation change accordingly.
+
+This means that when we take many samples of size N, the quantity (Ȳ - μ) / (σY / √N) approximates a normal distribution centered at 0 with a standard deviation of 1.
+
+Now, when we're interested in the difference between two sample averages, a mathematical result helps us. If we have two random variables X and Y with means μX and μY and variances σX and σY, the mean of their sum (Y + X) is the sum of their means (μY + μX). If they are independent, the variance of their sum is the sum of their variances (σ2Y + σ2X). This applies to the difference (Y - X) as well, and the variance of the difference is the sum of their variances.
+
+All these mathematical principles are crucial because they allow us to work with two sample averages and their differences, which, under the null hypothesis, can be approximated as normal distributions centered at 0, with standard deviations determined by the sum of their variances divided by the square root of the sample size (N).
+
+This facilitates the computation of p-values, as we can easily determine the proportion of the distribution under any value. For instance, if only 5% of the values are larger than 2 in absolute value, we can compute this probability without needing additional samples.
+
+Nonetheless, the challenge lies in not knowing the population standard deviations (σX and σY). To overcome this, we use sample standard deviations (sX and sY) as estimates. These estimates allow us to redefine our ratio and use the CLT to approximate the distribution as normal when the sample sizes (M and N) are large. This simplifies the computation of p-values using the pnorm function. 
+
+```{r}
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/mice_pheno.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+dat <- read.csv(filename)
+dat<-na.omit(dat)
+head(dat)
+```
+To create two vectors, one for the control population and one for the high-fat diet population:
+```{r}
+controlPopulation<-filter(dat,Sex=="F" & Diet=="chow")$Bodyweight
+hfPopulation<-filter(dat,Sex=="F" & Diet=="hf")$Bodyweight
+```
+
+Histogram for both controls and high fat diet mice:
+```{r}
+library(rafalib)
+mypar(1,2)
+hist(hfPopulation)
+hist(controlPopulation)
+```
+Examine of QQ-plots for  both controls and high fat diet mice:
+```{r}
+mypar(1,2)
+qqnorm(hfPopulation)
+qqline(hfPopulation)
+qqnorm(controlPopulation)
+qqline(controlPopulation)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
