@@ -1,0 +1,50 @@
+---
+title: "R Notebook for Populations, Samples and Estimates"
+output: html_notebook
+---
+
+Import data into R
+
+```{r}
+library(downloader)
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/mice_pheno.csv"
+filename <- "mice_pheno.csv"
+download(url,destfile=filename)
+dat <- read.csv(filename)
+View(dat)
+head(dat)
+```
+Check size of control population
+```{r}
+
+library(dplyr)
+controlPopulation <- filter(dat, Sex == "F" & Diet == "chow")$Bodyweight
+length(controlPopulation)
+```
+
+Check size of high fat diet population
+```{r}
+hfPopulation<-filter(dat,Sex=="F" & Diet=="hf")$Bodyweight
+length(hfPopulation)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
