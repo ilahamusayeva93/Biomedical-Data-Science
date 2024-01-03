@@ -1,0 +1,116 @@
+---
+title: "R Notebook_Population, Samples, and Estimates Exercises"
+output: html_notebook
+---
+Import data into R
+
+```{r}
+library(downloader) 
+url <- "https://raw.githubusercontent.com/genomicsclass/dagdata/master/inst/extdata/mice_pheno.csv"
+filename <- basename(url)
+download(url, destfile=filename)
+dat <- read.csv(filename)
+dat<-na.omit(dat)
+head(dat)
+
+```
+1. Use dplyr to create a vector x with the body weight of all males on the control (chow) diet. What is this population’s average?
+
+
+```{r}
+library(dplyr)
+x<-filter(dat,Sex=="M" & Diet=="chow")$Bodyweight
+mean_x<-mean(x)
+print(mean_x)
+```
+2. Now use the rafalib package and use the popsd function to compute the population standard deviation.
+
+```{r}
+library(rafalib)
+sd_x<-popsd(x)
+sd_x
+```
+3. Set the seed at 1. Take a random sample X of size 25 from x. What is the sample average?
+```{r}
+set.seed(1)
+control_x<-sample(x,25)
+control_x_mean<-mean(control_x)
+control_x_mean
+```
+
+4. Use dplyr to create a vector y with the body weight of all males on the high fat (hf) diet. What is this population’s average?
+```{r}
+library(dplyr)
+y<-filter(dat,Sex=="M" & Diet=="hf")$Bodyweight
+mean_y<-mean(y)
+print(mean_y)
+```
+5. Now use the rafalib package and use the popsd function to compute the population standard deviation.
+
+```{r}
+library(rafalib)
+sd_y<-popsd(y)
+sd_y
+```
+5. Set the seed at 1. Take a random sample Y of size 25 from y. What is the sample average?
+```{r}
+set.seed(1)
+control_y<-sample(y,25)
+control_y_mean<-mean(control_y)
+control_y_mean
+```
+7. What is the difference in absolute value between y¯−x¯ ?
+ 
+
+```{r}
+abs_diff_x_y_bar <- abs(mean_y - mean_x - (control_x_mean - control_y_mean))
+print(abs_diff_x_y_bar)
+```
+Repeat the above for females. Make sure to set the seed to 1 before each sample call. What is the difference in absolute value between y¯−x¯ ?
+```{r}
+set.seed(1)
+
+x_female <- filter(dat, Sex == "F" & Diet == "chow")$Bodyweight
+population_mean_x_female <- mean(x_female)
+population_sd_x_female <- popsd(x_female)
+
+sample_X_female <- sample(x_female, 25)
+sample_mean_X_female <- mean(sample_X_female)
+
+y_female <- filter(dat, Sex == "F" & Diet == "hf")$Bodyweight
+population_mean_y_female <- mean(y_female)
+population_sd_y_female <- popsd(y_female)
+
+sample_Y_female <- sample(y_female, 25)
+sample_mean_Y_female <- mean(sample_Y_female)
+
+
+abs_diff_x_y_bar_female <- abs(population_mean_y_female - population_mean_x_female - (sample_mean_X_female - sample_mean_Y_female))
+print(abs_diff_x_y_bar_female)
+
+```
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
